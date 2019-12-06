@@ -1,15 +1,21 @@
 package com.capgemini.camel.metrics.publisher;
 
-import com.codahale.metrics.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.management.MalformedObjectNameException;
-import javax.management.ObjectName;
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectName;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.codahale.metrics.Metric;
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.MetricSet;
+import com.codahale.metrics.jmx.JmxReporter;
+import com.codahale.metrics.jvm.JmxAttributeGauge;
 
 import static com.codahale.metrics.MetricRegistry.name;
 
@@ -26,7 +32,7 @@ public class TomcatMetricsPublisher {
      * Creates a new {@link JmxAttributeGauge} instance for the given JMX object
      * and attribute names.
      *
-     * @param objectName Name of the JMX object
+     * @param objectName    Name of the JMX object
      * @param attributeName Name of the JMX attribute
      * @return a {@link JmxAttributeGauge} instance for the given JMX object and
      * attribute names
@@ -37,7 +43,7 @@ public class TomcatMetricsPublisher {
             jmxAttributeGauge = new JmxAttributeGauge(ObjectName.getInstance(objectName), attributeName);
         } catch (MalformedObjectNameException | NullPointerException ex) {
             LOGGER.error("Exception while creating JmxAttributeGauge for {} and {}. "
-                    + "Exception details: {}", objectName, attributeName, ex.getMessage());
+                + "Exception details: {}", objectName, attributeName, ex.getMessage());
         }
         return jmxAttributeGauge;
     }
@@ -64,9 +70,9 @@ public class TomcatMetricsPublisher {
         private Builder(MetricRegistry registry) {
             this.registry = registry;
             this.jmxReporter = JmxReporter.forRegistry(registry)
-                    .convertDurationsTo(TimeUnit.MILLISECONDS)
-                    .convertRatesTo(TimeUnit.SECONDS)
-                    .build();
+                .convertDurationsTo(TimeUnit.MILLISECONDS)
+                .convertRatesTo(TimeUnit.SECONDS)
+                .build();
             this.serverPort = String.valueOf(8080);
         }
 
@@ -85,7 +91,6 @@ public class TomcatMetricsPublisher {
         /**
          * Starts the {@link JmxReporter} of the current
          * {@link TomcatMetricsPublisher} instance
-         *
          */
         public void start() {
             this.registry.register(name("tomcat"), new ThreadPoolMetricSet());
